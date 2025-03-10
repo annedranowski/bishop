@@ -1,3 +1,11 @@
+# python environments
+.conda/
+envs/
+*.conda
+*.env
+*.lock
+
+# vscode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
