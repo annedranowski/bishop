@@ -21,7 +21,7 @@ class EncoderLayer(nn.Module):
         self,
         embedding_size: int,
         attn_props: AttentionNoChannelsProps,
-        feedforward_conv_options: Conv2dNoChannelsFixedPaddingProps,
+        feedforward_conv_props: Conv2dNoChannelsFixedPaddingProps,
         hidden: int | Sequence[int] = [],
         Activation: Callable[[], nn.Module] = nn.GELU,
     ) -> None:
@@ -29,7 +29,7 @@ class EncoderLayer(nn.Module):
 
         self.attn_props = attn_props
         self.embedding_size = embedding_size
-        self.feedforward_conv_options = feedforward_conv_options
+        self.feedforward_conv_props = feedforward_conv_props
         self.hidden = [hidden] if isinstance(hidden, int) else hidden
 
         self.attention = Attention(
@@ -44,7 +44,7 @@ class EncoderLayer(nn.Module):
             self._create_same_padding_conv2d(
                 in_channels,
                 out_channels,
-                feedforward_conv_options,
+                feedforward_conv_props,
             )
             for in_channels, out_channels in zip(
                 [self.embedding_size, *self.hidden],
