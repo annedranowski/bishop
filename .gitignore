@@ -13,6 +13,9 @@ envs/
 !.vscode/extensions.json
 !.vscode/*.code-snippets
 
+# Dev Containers
+.devcontainer/*
+
 # Local History for Visual Studio Code
 .history/
 
