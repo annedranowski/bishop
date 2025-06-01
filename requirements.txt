@@ -17,7 +17,7 @@ pyparsing==3.2.3
 python-dateutil==2.9.0.post0
 scikit-learn==1.6.1
 scipy==1.15.2
-setuptools==70.2.0
+setuptools==78.1.1
 six==1.17.0
 sympy==1.13.1
 threadpoolctl==3.6.0
