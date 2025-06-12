@@ -1,43 +1,104 @@
 import torch.nn as nn
 
-class VanillaNet(nn.Module):
-    def __init__(self, input_dim, output_dim):
+from torch import nn
+
+# Create a model with non-linear and linear layers
+class KnotsModelVanila(nn.Module):
+    def __init__(self, input_shape: int, hidden_units_1: int, hidden_units_2: int, hidden_units_3:int, hidden_units_4: int, output_shape: int): # try to change the number of hidden layers
         super().__init__()
-        # Define layers
-        self.layer = nn.Linear(input_dim, output_dim)
-        # Add other layers as needed
+        self.dropout = nn.Dropout(p=0.9)
 
-    def forward(self, x):
-        # Forward pass
-        return x
+        self.layer_prepare = nn.Sequential(
+            nn.Flatten(),
+            nn.BatchNorm1d(input_shape)
+        )
+        self.layer_1 = nn.Sequential(
+            nn.Linear(in_features=input_shape, out_features=hidden_units_1),
+            nn.ELU(),
+            nn.BatchNorm1d(hidden_units_1)
+        )
+        self.layer_2 = nn.Sequential(
+            nn.Linear(in_features=hidden_units_1, out_features=hidden_units_2),
+            nn.ELU(),
+            nn.BatchNorm1d(hidden_units_2)
+        )
+        self.layer_3 = nn.Sequential(
+            nn.Linear(in_features=hidden_units_2, out_features=hidden_units_3),
+            nn.ELU(),
+            nn.BatchNorm1d(hidden_units_3)
+        )
+        self.layer_4 = nn.Sequential(
+            nn.Linear(in_features=hidden_units_3, out_features=hidden_units_4),
+            nn.ELU()
+        )
+        self.layer_5 = nn.Sequential(
+            nn.Linear(in_features=hidden_units_4, out_features=output_shape)
+        )
 
-class KnotCNN(nn.Module):
+    def forward(self, x: torch.Tensor):
+      x = self.layer_prepare(x)
+      #x = self.dropout(x)
+      x = self.layer_1(x)
+      #x = self.dropout(x)
+      x = self.layer_2(x)
+      #x = self.dropout(x)
+      x = self.layer_3(x)
+      #x = self.dropout(x)
+      x = self.layer_4(x)
+      x = self.dropout(x)
+      x = self.layer_5(x)
+      return x
+
+# Create a convolutional neural network
+class KnotsModelCNN(nn.Module):
     """
-    A simple CNN architecture for knot recognition.
-    
-    Architecture inspired by TinyVGG:
+    Model architecture copying TinyVGG from:
     https://poloclub.github.io/cnn-explainer/
-    
-    Args:
-        input_channels (int): Number of input channels.
-        num_classes (int): Number of output classes.
     """
-    def __init__(self, input_channels=3, num_classes=10):
+    def __init__(self, output_shape: int):
         super().__init__()
-        self.conv1 = nn.Conv2d(input_channels, 32, 3, 1)
-        self.fc = nn.Linear(32*28*28, num_classes)  # adjust as needed
 
-    """
-    Forward pass of the network.
-    
-    Args:
-        x (Tensor): Input tensor of shape (batch_size, channels, height, width)
-    
-    Returns:
-        Tensor: Output logits for each class.
-    """
-    def forward(self, x):
-        x = self.conv1(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc(x)
-        return x
+        self.conv_1 = nn.Sequential(
+          nn.Conv2d(1, 4, kernel_size=16, stride=1, dilation=2, padding=0),
+          nn.BatchNorm2d(4),
+          nn.ReLU(),
+
+          nn.MaxPool2d(kernel_size=2),
+
+          nn.Conv2d(4, 16, kernel_size=6, stride=1, dilation=2, padding=0),
+          nn.BatchNorm2d(16),
+          nn.ReLU(),
+
+          nn.MaxPool2d(kernel_size=2),
+
+          nn.Conv2d(16, 64, kernel_size=4, stride=1, dilation=2, padding=0),
+          nn.BatchNorm2d(64),
+          nn.ReLU(),
+
+          nn.MaxPool2d(kernel_size=2),
+
+          nn.Conv2d(64, 256, kernel_size=3, stride=1, dilation=2, padding=0),
+          nn.BatchNorm2d(256),
+          nn.ReLU(),
+
+          nn.MaxPool2d(kernel_size=2),
+
+          nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=0),
+          nn.BatchNorm2d(256),
+          nn.ReLU(),
+
+          nn.MaxPool2d(kernel_size=2),
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+
+            nn.Linear(in_features=256*(11)**2,
+                      out_features=output_shape)
+        )
+
+    def forward(self, x: torch.Tensor):
+      x = self.conv_1(x)
+      #print(x.shape)
+      x = self.classifier(x)
+      return x
